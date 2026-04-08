@@ -28,15 +28,14 @@
         .summary-group-label { font-weight: 800; font-size: 1.05rem; color: #475569; margin: 15px 0 8px 0; display: block; }
         .summary-badge-container { display: flex; flex-wrap: wrap; gap: 8px; line-height: 2.2; }
 
-        /* [추가] 배지 클릭 기능 관련 스타일 */
-        .badge { padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 800; display: inline-flex; align-items: center; cursor: pointer; transition: 0.2s; position: relative; }
-        .badge:hover { transform: scale(1.05); filter: brightness(0.9); }
-        .badge:active { transform: scale(0.95); }
-        .badge::after { content: '✕'; margin-left: 6px; font-size: 0.7rem; opacity: 0.5; }
-        .badge-danger { background: #fee2e2; color: #e11d48; border: 1.5px solid #fda4af; }
+        /* [수정] 배지 디자인 및 확인 완료 상태(취소선) 추가 */
+        .badge { padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 800; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent; user-select: none; }
+        .badge-danger { background: #fee2e2; color: #e11d48; border-color: #fda4af; }
+        .badge-danger:hover { background: #fecaca; transform: translateY(-1px); }
         
-        /* 사라지는 효과 */
-        .fade-out { opacity: 0; transform: scale(0.9); pointer-events: none; }
+        /* 확인 완료 상태 (취소선 + 회색) */
+        .badge-checked { background: #f1f5f9 !important; color: #94a3b8 !important; border-color: #e2e8f0 !important; text-decoration: line-through; opacity: 0.8; }
+        .badge-checked:hover { transform: none; }
 
         .equipment-row { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: stretch; margin-bottom: 50px; }
         .branch-column { display: flex; flex-direction: column; width: 100%; }
@@ -76,7 +75,7 @@
                     <input type="file" id="excelFile" hidden />
                     <div class="upload-icon" style="font-size: 3.5rem; margin-bottom: 15px;">📄</div>
                     <h3 style="margin:0; color: var(--primary); font-size: 1.5rem;">가동일보 파일 업로드</h3>
-                    <p style="color:#64748b; margin-top:15px; font-weight:600;">드림스 가동일보 드래그 앤 드롭 (확인 항목 제거 기능 포함)</p>
+                    <p style="color:#64748b; margin-top:15px; font-weight:600;">드림스 가동일보 드래그 앤 드롭</p>
                 </div>
                 <div id="summary-area"></div>
                 <div id="full-list-area"></div>
@@ -113,10 +112,9 @@
 
         let currentLine = '', isCooling = false, currentWorkbook = null, currentFileName = '', ventSeason = '';
 
-        // [배지 클릭 시 제거 함수]
-        function dismissBadge(el) {
-            el.classList.add('fade-out');
-            setTimeout(() => { el.remove(); }, 300);
+        // [수정] 배지 클릭 시 취소선 토글 기능
+        function toggleBadge(el) {
+            el.classList.toggle('badge-checked');
         }
 
         function toggleDetail(btn, targetId, labelName) {
@@ -240,26 +238,26 @@
                 
                 if (cH.length > 0) {
                     h += `<span class="summary-group-label">[승강장 공조기]</span><div class="summary-badge-container">`;
-                    cH.forEach(d => { d.res.forEach((r, i) => { if (r.s === 'critical') h += `<span class="badge badge-danger" onclick="dismissBadge(this)">${d.name} ${hLabels[i]} (${formatToHMS(d.raw[i])})</span> `; }); });
+                    cH.forEach(d => { d.res.forEach((r, i) => { if (r.s === 'critical') h += `<span class="badge badge-danger" onclick="toggleBadge(this)">${d.name} ${hLabels[i]} (${formatToHMS(d.raw[i])})</span> `; }); });
                     h += `</div>`;
                 }
                 if (cV.length > 0) {
                     h += `<span class="summary-group-label">[환기실 송풍기]</span><div class="summary-badge-container">`;
                     cV.forEach(d => { d.res.forEach((r, i) => { if (r.s === 'critical') {
                         const lbl = (currentLine==='line1'||!d.unitNames) ? vLabels[i] : (d.unitNames[i] || '장비');
-                        h += `<span class="badge badge-danger" onclick="dismissBadge(this)">${d.name} ${lbl} (${formatToHMS(d.raw[i])})</span> `;
+                        h += `<span class="badge badge-danger" onclick="toggleBadge(this)">${d.name} ${lbl} (${formatToHMS(d.raw[i])})</span> `;
                     } }); });
                     h += `</div>`;
                 }
                 if (cA.length > 0) {
                     h += `<span class="summary-group-label">[공기청정기]</span><div class="summary-badge-container">`;
-                    cA.forEach(d => { d.units.forEach(u => { if (u.res.s === 'critical') h += `<span class="badge badge-danger" onclick="dismissBadge(this)">${d.name} ${u.label} (${formatToHMS(u.val)})</span> `; }); });
+                    cA.forEach(d => { d.units.forEach(u => { if (u.res.s === 'critical') h += `<span class="badge badge-danger" onclick="toggleBadge(this)">${d.name} ${u.label} (${formatToHMS(u.val)})</span> `; }); });
                     h += `</div>`;
                 }
                 return h + `</div>`;
             };
 
-            document.getElementById('summary-area').innerHTML = `<h2 class="summary-section-main-title">⚠️ 통합 이상 내역 요약 (확인 후 클릭하여 제거 가능)</h2><div class="summary-area-grid">${buildSummary(b.left)}${buildSummary(b.right)}</div>`;
+            document.getElementById('summary-area').innerHTML = `<h2 class="summary-section-main-title">⚠️ 통합 이상 내역 요약 (클릭하여 확인 표시)</h2><div class="summary-area-grid">${buildSummary(b.left)}${buildSummary(b.right)}</div>`;
 
             const buildColHtml = (br, side) => {
                 const sideH = hvac.filter(d => br.stations.includes(d.name));
@@ -267,7 +265,7 @@
                 const sideA = air.filter(d => br.stations.includes(d.name));
                 return `
                 <div class="branch-column">
-                    <div class="branch-name-header">${br.name} 관할</div>
+                    <div class="branch-name-header">${br.name}</div>
                     <div class="section-title">📊 승강장 공조기 상세</div>
                     <button class="toggle-detail-btn" onclick="toggleDetail(this, '${side}-hvac', '승강장공조기')">[승강장공조기] 상세보기 ▾</button>
                     <div id="${side}-hvac" class="detail-content">${buildTable(sideH, hLabels)}</div>
@@ -291,7 +289,7 @@
                     const val = d.raw[i], res = d.res[i] || { c: '' };
                     h += `<td class="${res.c}">${(val === "N/A" || val === undefined) ? "-" : formatToHMS(val)}</td>`;
                 }
-                h += `<td><span class="badge badge-${d.isCri?'danger':(d.isAb?'warning':'success')}">${d.isCri?'이상':(d.isAb?'확인':'정상')}</span></td></tr>`;
+                h += `<td><span class="badge-static" style="font-size:0.75rem; font-weight:800; color:${d.isCri?'#e11d48':'#059669'}">${d.isCri?'이상':'정상'}</span></td></tr>`;
             });
             return h + `</tbody></table></div>`;
         }
