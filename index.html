@@ -26,17 +26,34 @@
         .summary-card.ok { border-color: #dcfce7; border-left-color: var(--success); background: #f0fdf4; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.05); }
         .summary-title { font-weight: 900; font-size: 1.5rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px; }
         .summary-group-label { font-weight: 800; font-size: 1.05rem; color: #475569; margin: 15px 0 8px 0; display: block; }
-        .summary-badge-container { display: flex; flex-wrap: wrap; gap: 8px; line-height: 2.2; }
 
-        /* 배지 디자인 및 취소선 효과 */
-        .badge { padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 800; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent; user-select: none; }
-        .badge-danger { background: #fee2e2; color: #e11d48; border-color: #fda4af; }
-        .badge-danger:hover { background: #fecaca; transform: translateY(-1px); }
+        /* [수정 2-3] 배지 행렬 일치 및 배경색 연하게 변경 */
+        .summary-badge-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* 일정한 너비로 행렬 맞춤 */
+            gap: 10px; 
+            line-height: 1.4; 
+        }
+        .badge { 
+            padding: 10px 12px; 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            font-weight: 800; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; /* 텍스트 중앙 정렬 */
+            cursor: pointer; 
+            transition: all 0.2s; 
+            border: 1.5px solid transparent; 
+            user-select: none;
+            text-align: center;
+        }
+        /* 빨간색 배경을 더 연하게 수정 */
+        .badge-danger { background: #fff1f2; color: #e11d48; border-color: #ffe4e6; }
+        .badge-danger:hover { background: #ffe4e6; transform: translateY(-1px); }
         
-        /* 확인 완료 상태 (취소선 + 회색) */
         .badge-checked { background: #f1f5f9 !important; color: #94a3b8 !important; border-color: #e2e8f0 !important; text-decoration: line-through; opacity: 0.7; transform: none !important; }
 
-        /* 하단 상세 분석 2열 레이아웃 */
         .equipment-row { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: stretch; margin-bottom: 50px; }
         .branch-column { display: flex; flex-direction: column; width: 100%; }
         .branch-name-header { background: var(--dark); color: white; padding: 12px 20px; border-radius: 10px; font-weight: 800; font-size: 1.15rem; margin-bottom: 25px; align-self: flex-start; }
@@ -64,7 +81,7 @@
         <header class="app-header">
             <div class="container header-inner">
                 <button class="back-btn" onclick="location.reload()">↺ 분석 초기화</button>
-                <div id="line-indicator" class="line-badge" style="color: var(--primary); font-weight: 800; font-size: 1.3rem;">가동일보 파일을 업로드 해주십시오</div>
+                <div id="line-indicator" class="line-badge" style="color: var(--primary); font-weight: 800; font-size: 1.3rem;">장비 가동 일보 분석</div>
                 <div style="width:100px;"></div>
             </div>
         </header>
@@ -75,7 +92,7 @@
                     <input type="file" id="excelFile" hidden />
                     <div class="upload-icon" style="font-size: 3.5rem; margin-bottom: 15px;">📄</div>
                     <h3 style="margin:0; color: var(--primary); font-size: 1.5rem;">가동일보 파일 업로드</h3>
-                    <p style="color:#64748b; margin-top:15px; font-weight:600;">드림스 가동일보 드래그 앤 드롭</p>
+                    <p style="color:#64748b; margin-top:15px; font-weight:600;">드림스 가동일보 클릭하여 업로드</p>
                 </div>
                 <div id="summary-area"></div>
                 <div id="full-list-area"></div>
@@ -112,7 +129,6 @@
 
         let currentLine = '', isCooling = false, currentWorkbook = null, currentFileName = '', ventSeason = '';
 
-        // [핵심] 클릭 시 취소선 토글 함수
         function toggleBadge(el) {
             el.classList.toggle('badge-checked');
         }
@@ -131,26 +147,32 @@
             if(!file) return;
             currentFileName = file.name;
             currentLine = (currentFileName.includes("일보") || currentFileName.includes("2호선")) ? 'line2' : 'line1';
+            
             const reader = new FileReader();
             reader.onload = (evt) => {
                 currentWorkbook = XLSX.read(evt.target.result, { type: 'binary', cellDates: true });
-                runIntegratedAnalysis(currentWorkbook);
+                
+                // [수정 2-1] 날짜 추출하여 헤더 문구 업데이트
+                let m = 0, d = 0;
+                const dateMatch = currentFileName.match(/\d{8}/);
+                if (dateMatch) {
+                    m = parseInt(dateMatch[0].substring(4, 6));
+                    d = parseInt(dateMatch[0].substring(6, 8));
+                } else {
+                    const ts = currentWorkbook.Sheets[currentWorkbook.SheetNames[0]];
+                    const dv = ts['C2'] ? ts['C2'].v : null;
+                    if(dv instanceof Date) { m = dv.getMonth()+1; d = dv.getDate(); }
+                }
+                
+                document.getElementById('line-indicator').innerText = `${m}월 ${d}일 가동일보 분석`;
+                
+                runIntegratedAnalysis(currentWorkbook, m, d);
                 document.getElementById('upload-container').classList.add('minimized');
-                document.getElementById('line-indicator').innerText = (currentLine === 'line1' ? '🚇 1호선' : '🚇 2호선') + ' 분석 완료';
             };
             reader.readAsBinaryString(file);
         });
 
-        function runIntegratedAnalysis(wb) {
-            let m = 0, d = 0;
-            const dateMatch = currentFileName.match(/\d{8}/);
-            if (dateMatch) {
-                m = parseInt(dateMatch[0].substring(4, 6)); d = parseInt(dateMatch[0].substring(6, 8));
-            } else {
-                const ts = wb.Sheets[wb.SheetNames[0]];
-                const dv = ts['C2'] ? ts['C2'].v : null;
-                if(dv instanceof Date) { m = dv.getMonth()+1; d = dv.getDate(); }
-            }
+        function runIntegratedAnalysis(wb, m, d) {
             isCooling = (m === 7 || m === 8 || (m === 9 && d <= 20));
             ventSeason = CONFIG.VENT_SEASON.INTER.includes(m) ? '간절기' : (CONFIG.VENT_SEASON.SUMMER.includes(m) ? '하절기' : '동절기');
 
@@ -257,7 +279,8 @@
                 return h + `</div>`;
             };
 
-            document.getElementById('summary-area').innerHTML = `<h2 class="summary-section-main-title">⚠️ 통합 이상 내역 요약 (클릭하여 확인 표시)</h2><div class="summary-area-grid">${buildSummary(b.left)}${buildSummary(b.right)}</div>`;
+            // [수정 2-2] 요약 섹션 제목 변경
+            document.getElementById('summary-area').innerHTML = `<h2 class="summary-section-main-title">⚠️ 확인 필요 호기(클릭하여 조치 완료 표시)</h2><div class="summary-area-grid">${buildSummary(b.left)}${buildSummary(b.right)}</div>`;
 
             const buildColHtml = (br, side) => {
                 const sideH = hvac.filter(d => br.stations.includes(d.name));
