@@ -28,15 +28,15 @@
         .summary-group-label { font-weight: 800; font-size: 1.05rem; color: #475569; margin: 15px 0 8px 0; display: block; }
         .summary-badge-container { display: flex; flex-wrap: wrap; gap: 8px; line-height: 2.2; }
 
-        /* [수정] 배지 디자인 및 확인 완료 상태(취소선) 추가 */
+        /* 배지 디자인 및 취소선 효과 */
         .badge { padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 800; display: inline-flex; align-items: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent; user-select: none; }
         .badge-danger { background: #fee2e2; color: #e11d48; border-color: #fda4af; }
         .badge-danger:hover { background: #fecaca; transform: translateY(-1px); }
         
         /* 확인 완료 상태 (취소선 + 회색) */
-        .badge-checked { background: #f1f5f9 !important; color: #94a3b8 !important; border-color: #e2e8f0 !important; text-decoration: line-through; opacity: 0.8; }
-        .badge-checked:hover { transform: none; }
+        .badge-checked { background: #f1f5f9 !important; color: #94a3b8 !important; border-color: #e2e8f0 !important; text-decoration: line-through; opacity: 0.7; transform: none !important; }
 
+        /* 하단 상세 분석 2열 레이아웃 */
         .equipment-row { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: stretch; margin-bottom: 50px; }
         .branch-column { display: flex; flex-direction: column; width: 100%; }
         .branch-name-header { background: var(--dark); color: white; padding: 12px 20px; border-radius: 10px; font-weight: 800; font-size: 1.15rem; margin-bottom: 25px; align-self: flex-start; }
@@ -112,7 +112,7 @@
 
         let currentLine = '', isCooling = false, currentWorkbook = null, currentFileName = '', ventSeason = '';
 
-        // [수정] 배지 클릭 시 취소선 토글 기능
+        // [핵심] 클릭 시 취소선 토글 함수
         function toggleBadge(el) {
             el.classList.toggle('badge-checked');
         }
@@ -289,7 +289,7 @@
                     const val = d.raw[i], res = d.res[i] || { c: '' };
                     h += `<td class="${res.c}">${(val === "N/A" || val === undefined) ? "-" : formatToHMS(val)}</td>`;
                 }
-                h += `<td><span class="badge-static" style="font-size:0.75rem; font-weight:800; color:${d.isCri?'#e11d48':'#059669'}">${d.isCri?'이상':'정상'}</span></td></tr>`;
+                h += `<td><span style="font-size:0.75rem; font-weight:800; color:${d.isCri?'#e11d48':'#059669'}">${d.isCri?'이상':'정상'}</span></td></tr>`;
             });
             return h + `</tbody></table></div>`;
         }
