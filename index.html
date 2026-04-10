@@ -223,13 +223,13 @@ const CONFIG = {
     NORMAL_TARGETS: { "type1": 17, "type2": 15, "type3": 15.5, "type4": 16.5 },
     L2_NAME_MAP: { "수성알파시티": "수성알파", "영남대": "영대", "성서산업단지": "성서산단" },
     NO_EQUIP: { 
-        "문양": ["공조기", "송풍기", "냉동기", "공기청정기"],
+        "문양": ["공조기", "송풍기", "공기청정기"],
         "다사": ["상부배기", "하부배기"],
         "대실": ["상부배기", "하부배기"]
     },
     CHILLER_VALS: {
         "설화명곡":6.0, "화원":6.0, "대곡":6.0, "진천":5.5, "월배":5.5, "상인":11.5, "월촌":5.5, "송현":5.5, "서부정류장":10.0, "대명":5.5, "안지랑":5.5, "현충로":5.5, "영대병원":6.0, "교대":7.0, "명덕":6.0, "반월당":11.5, "중앙로":14.5, "대구역":6.0, "칠성시장":5.5, "신천":5.5, "동대구":11.5, "동구청":5.5, "아양교":6.0, "동촌":5.5, "해안":5.5, "방촌":6.0, "용계":5.5, "율하":6.0, "신기":5.5, "반야월":5.5, "각산":6.0, "안심":11.5,
-        "다사":4.0, "대실":4.5, "강창":4.5, "계명대":4.5, "성서산단":4.5, "성서산업단지":4.5, "이곡":4.5, "용산":6.0, "죽전":6.0, "감삼":6.0, "두류":6.0, "내당":6.5, "반고개":6.0, "청라언덕":6.5, "반월당(2호선)":12.0, "경대병원":6.0, "대구은행":6.0, "범어":5.5, "수성구청":5.0, "만촌":4.5, "담티":5.0, "연호":5.0, "수성알파":5.0, "고산": 6.5, "신매": 5.5, "사월": 6.0, "정평": 5.5, "임당": 4.5, "영남대": 4.5
+        "문양":7.0, "다사":4.0, "대실":4.5, "강창":4.5, "계명대":4.5, "성서산단":4.5, "성서산업단지":4.5, "이곡":4.5, "용산":6.0, "죽전":6.0, "감삼":6.0, "두류":6.0, "내당":6.5, "반고개":6.0, "청라언덕":6.5, "반월당(2호선)":12.0, "경대병원":6.0, "대구은행":6.0, "범어":5.5, "수성구청":5.0, "만촌":4.5, "담티":5.0, "연호":5.0, "수성알파":5.0, "고산": 6.5, "신매": 5.5, "사월": 6.0, "정평": 5.5, "임당": 4.5, "영남대": 4.5
     },
     BRANCHES: {
         line1: {
@@ -338,11 +338,24 @@ function analyzeHVAC(val, st, type) {
         }
     } else {
         const ty = CONFIG.ST_COOL[st] || "type3";
-        const target = (ty === "type1") ? 12 : 9;
         if (type === 'supply') {
-            if (Math.abs(h - target) >= 4) return { s: 'critical', c: 'critical-val' };
-            const range = (ty === "type1") ? (h >= 10 && h <= 13) : (h >= 7.5 && h <= 10.5);
-            return range ? { s: 'ok', c: '' } : { s: 'warning', c: 'bad-val' };
+            if (ty === "type1") {
+                // 1번 유형: 급기 10~13시간 정상, 기준치 12h에서 4시간 이상 차이 시 즉시 확인
+                const target = 12;
+                if (Math.abs(h - target) >= 4) return { s: 'critical', c: 'critical-val' };
+                return (h >= 10 && h <= 13) ? { s: 'ok', c: '' } : { s: 'warning', c: 'bad-val' };
+            } else if (ty === "type2") {
+                // 2번 유형: 급기 7시간 30분~10시간 30분 정상, 기준치 9h에서 4시간 이상 차이 시 즉시 확인
+                const target = 9;
+                if (Math.abs(h - target) >= 4) return { s: 'critical', c: 'critical-val' };
+                return (h >= 7.5 && h <= 10.5) ? { s: 'ok', c: '' } : { s: 'warning', c: 'bad-val' };
+            } else {
+                // 3번 유형: 역사별 냉동기 스케줄 기준 ±2시간 이내 정상
+                const stKey = (st === "반월당" && currentLine === 'line2') ? "반월당(2호선)" : st;
+                const chillerTarget = CONFIG.CHILLER_VALS[stKey] || 6.0;
+                if (h === 0 || Math.abs(h - chillerTarget) > 2) return { s: 'critical', c: 'critical-val' };
+                return { s: 'ok', c: '' };
+            }
         } else { return (h <= (10/60)) ? { s: 'critical', c: 'critical-val' } : { s: 'ok', c: '' }; }
     }
 }
@@ -538,7 +551,7 @@ function getL2C(s) {
     const d = []; if(!s) return d; const rg = XLSX.utils.decode_range(s['!ref']);
     const allSt = CONFIG.BRANCHES.line2.left.stations.concat(CONFIG.BRANCHES.line2.right.stations);
     allSt.forEach(st => {
-        if(st === "문양" || (CONFIG.NO_EQUIP[st] && CONFIG.NO_EQUIP[st].includes("냉동기"))) return;
+        if(CONFIG.NO_EQUIP[st] && CONFIG.NO_EQUIP[st].includes("냉동기")) return;
         const mn = st.replace(/\s+/g,""); let tot = 0, found = false;
         for (let r=0; r<=rg.e.r; r++) {
             let txt = (getCV(s,r,0)+getCV(s,r,1)+getCV(s,r,2)).replace(/\s+/g,"").replace("(2)","");
