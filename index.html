@@ -383,7 +383,7 @@ function render(data) {
             <button class="toggle-btn" onclick="toggleDetail(this,'${side}h')">📊 공조기 상세내역 <span>▾</span></button><div id="${side}h" class="detail-content">${buildT(sH, hL)}</div>
             <button class="toggle-btn" onclick="toggleDetail(this,'${side}v')">🌪️ 송풍기 상세내역 <span>▾</span></button><div id="${side}v" class="detail-content">${buildT(sV, ["시급","시배","종급","종배"])}</div>
             ${isCooling?`<button class="toggle-btn" onclick="toggleDetail(this,'${side}c')">❄️ 냉동기 합산내역 <span>▾</span></button><div id="${side}c" class="detail-content">${buildT(sC, ["가동시간"])}</div>`:''}
-            <button class="toggle-btn" onclick="toggleDetail(this,'${side}a')">🌬️ 청정기 상세내역 <span>▾</span></button><div id="${side}a" class="detail-content">${buildAT(sA)}</div>
+            <button class="toggle-btn" onclick="toggleDetail(this,'${side}a')">🌬️ 공기청정기 상세내역 <span>▾</span></button><div id="${side}a" class="detail-content">${buildAT(sA)}</div>
         </div>`;
     };
     document.getElementById('details-section').innerHTML = buildCol(br.left, 'l') + buildCol(br.right, 'r');
