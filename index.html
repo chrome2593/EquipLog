@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>대구교통공사 장비 가동 통합 분석 시스템</title>
+    <title>대구교통공사 장비 가동 일보 분석 시스템</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -422,7 +422,7 @@
             <div class="upload-card" onclick="document.getElementById('excelFile').click()">
                 <div class="upload-icon">📂</div>
                 <div class="upload-title">가동일보 엑셀 업로드</div>
-                <div class="upload-desc">DRIMS 가동일보 파일을 선택하거나 이곳에 끌어다 놓으세요</div>
+                <div class="upload-desc">DRIMS 가동일보 파일을 업로드 하세요</div>
                 <div class="upload-hint">
                     <span>1호선 가동시간.xlsx</span>
                     <span>2호선 일보.xlsx</span>
@@ -449,8 +449,8 @@ const CONFIG = {
             right: { name: "동대구기계분소",   stations: ["대구역","칠성시장","신천","동대구","동구청","아양교","동촌","해안","방촌","용계","율하","신기","반야월","각산","안심"], icon: "🔴" }
         },
         line2: {
-            left:  { name: "문양기지기계분소", stations: ["문양","다사","대실","강창","계명대","성서산단","성서산업단지","이곡","용산","죽전","감삼","두류","내당","반고개","청라언덕"], icon: "🏭" },
-            right: { name: "사월기계분소",     stations: ["반월당","경대병원","대구은행","범어","수성구청","만촌","담티","연호","수성알파","수성알파시티","대공원","고산","신매","사월","정평","임당","영남대","영대"], icon: "🏗️" }
+            left:  { name: "문양기지기계분소", stations: ["문양","다사","대실","강창","계명대","성서산단","성서산업단지","이곡","용산","죽전","감삼","두류","내당","반고개","청라언덕"], icon:🟢" },
+            right: { name: "사월기계분소",     stations: ["반월당","경대병원","대구은행","범어","수성구청","만촌","담티","연호","수성알파","수성알파시티","대공원","고산","신매","사월","정평","임당","영남대","영대"], icon: "🟢" }
         }
     },
     L1_ST_LIST: ["대곡","진천","월배","상인","월촌","송현","서부정류장","대명","안지랑","현충로","영대병원","교대","명덕","반월당","중앙로","대구역","칠성시장","신천","동대구","동구청","아양교","동촌","해안","방촌","용계","율하","신기","반야월","각산","안심"]
