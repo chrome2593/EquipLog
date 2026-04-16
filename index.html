@@ -9,25 +9,25 @@
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
         :root {
-            --primary: #0052cc;
-            --primary-dark: #003a99;
-            --primary-light: #e8f0fe;
-            --dark: #0f172a;
-            --mid: #334155;
-            --bg: #f4f6fb;
-            --danger: #e11d48;
-            --danger-light: #fff1f4;
-            --warning: #e11d48;
-            --warning-light: #fff1f4;
-            --success: #059669;
-            --success-light: #ecfdf5;
-            --border: #dde3ef;
+            --primary: #3b6fd4;
+            --primary-dark: #3460b8;
+            --primary-light: #eef3fc;
+            --dark: #1e293b;
+            --mid: #475569;
+            --bg: #f5f7fb;
+            --danger: #c0364f;
+            --danger-light: #fdf2f4;
+            --warning: #c0364f;
+            --warning-light: #fdf2f4;
+            --success: #1a7a5e;
+            --success-light: #f0faf6;
+            --border: #e2e8f0;
             --na: #94a3b8;
             --sidebar-w: 320px;
             --header-h: 58px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-md: 0 4px 16px rgba(0,52,153,0.08), 0 1px 4px rgba(0,0,0,0.04);
-            --shadow-lg: 0 20px 40px rgba(0,0,0,0.12);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 16px rgba(52,96,184,0.07), 0 1px 4px rgba(0,0,0,0.03);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.10);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -45,7 +45,7 @@
         .app-header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 200;
             height: var(--header-h);
-            background: var(--primary-dark);
+            background: #2d5299;
             display: flex; align-items: center;
             padding: 0 24px;
             gap: 20px;
@@ -137,7 +137,7 @@
         .checklist-item {
             display: flex; align-items: center; gap: 10px;
             padding: 8px 10px; border-radius: 10px;
-            border: 1.5px solid transparent; background: #fff8f9;
+            border: 1.5px solid transparent; background: #fdf4f6;
             margin-bottom: 5px; cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
@@ -146,14 +146,14 @@
         .checklist-item:active { transform: scale(0.98); }
         .checklist-check {
             width: 20px; height: 20px; border-radius: 6px;
-            border: 2px solid #fbb6c4; background: white;
+            border: 2px solid #dba0ae; background: white;
             flex-shrink: 0; display: flex; align-items: center; justify-content: center;
             font-size: 0.7rem; transition: 0.2s;
         }
         .checklist-label { font-size: 0.8rem; font-weight: 800; color: var(--danger); flex: 1; line-height: 1.3; }
         .checklist-val {
             font-size: 0.72rem; font-weight: 700; color: var(--danger);
-            background: #fce7ec; padding: 2px 7px; border-radius: 6px; white-space: nowrap;
+            background: #f5dde2; padding: 2px 7px; border-radius: 6px; white-space: nowrap;
         }
 
         @keyframes slideOut {
@@ -333,7 +333,7 @@
         }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         thead th {
-            background: var(--primary-dark); color: white; padding: 9px 6px;
+            background: #3460b8; color: white; padding: 9px 6px;
             font-size: 0.72rem; font-weight: 800;
             border-bottom: 1px solid var(--border); text-align: center;
         }
@@ -347,8 +347,8 @@
             font-weight: 900; color: var(--primary); background: #f8faff !important;
             width: 85px; border-right: 1px solid #f1f5f9; text-align: left; padding-left: 12px;
         }
-        .critical-val { background: var(--danger) !important; color: white !important; border-radius: 0; }
-        .bad-val { background: #fce7ec !important; color: var(--danger) !important; }
+        .critical-val { background: #c0364f !important; color: white !important; border-radius: 0; }
+        .bad-val { background: #f5dde2 !important; color: var(--danger) !important; }
         .na-cell { background: #f8fafc !important; color: var(--na) !important; }
 
         /* ───── EMPTY STATES ───── */
@@ -826,15 +826,18 @@ function renderDashboard() {
 
         /* ─── 2열 그리드 레이아웃 적용 구간 ─── */
         mainHtml += `<div class="detail-grid">`;
-        mainHtml += `<div><div class="detail-section-title">⚙️ 공조기 상세내역</div>${buildAccordion(sH, hL, 'buildTable', `acc-h-${idx}`, cntH)}</div>`;
-        mainHtml += `<div><div class="detail-section-title">🌪️ 송풍기 상세내역</div>${buildAccordion(sV, ["시급","시배","종급","종배"], 'buildTable', `acc-v-${idx}`, cntV)}</div>`;
+        /* 왼쪽 열: 공조기 + 공기청정기 */
+        mainHtml += `<div>`;
+        mainHtml += `<div class="detail-section-title">⚙️ 공조기 상세내역</div>${buildAccordion(sH, hL, 'buildTable', `acc-h-${idx}`, cntH)}`;
+        mainHtml += `<div class="detail-section-title" style="margin-top:16px;">🌬️ 공기청정기 상세내역</div>${buildAccordionAir(sA, `acc-a-${idx}`, cntA)}`;
         mainHtml += `</div>`;
-
-        mainHtml += `<div class="detail-grid">`;
-        mainHtml += `<div><div class="detail-section-title">🌬️ 공기청정기 상세내역</div>${buildAccordionAir(sA, `acc-a-${idx}`, cntA)}</div>`;
+        /* 오른쪽 열: 송풍기 + 냉동기 */
+        mainHtml += `<div>`;
+        mainHtml += `<div class="detail-section-title">🌪️ 송풍기 상세내역</div>${buildAccordion(sV, ["시급","시배","종급","종배"], 'buildTable', `acc-v-${idx}`, cntV)}`;
         if (isCooling) {
-            mainHtml += `<div><div class="detail-section-title">❄️ 냉동기 합산내역</div>${buildAccordion(sC, ["가동시간"], 'buildTable', `acc-c-${idx}`, cntC)}</div>`;
+            mainHtml += `<div class="detail-section-title" style="margin-top:16px;">❄️ 냉동기 합산내역</div>${buildAccordion(sC, ["가동시간"], 'buildTable', `acc-c-${idx}`, cntC)}`;
         }
+        mainHtml += `</div>`;
         mainHtml += `</div>`;
         /* ────────────────────────────────── */
 
